@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" >
 
-<title>Hello Gridea | 浮生亦梦</title>
+<title>springboot中实体、logback等无法引入yml文件中内容的问题 | 浮生亦梦</title>
 <meta name="description" content="探索、发现、理解、记录">
 
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
@@ -97,45 +97,50 @@
       <div class="main-container">
         <div class="content-container" data-aos="fade-up">
           <div class="post-detail">
-            <h2 class="post-title">Hello Gridea</h2>
-            <div class="post-date">2018-12-12</div>
-            
-              <div class="feature-container" style="background-image: url('https://zhou-chengcheng.github.io/post-images/hello-gridea.png')">
-              </div>
+            <h2 class="post-title">springboot中实体、logback等无法引入yml文件中内容的问题</h2>
+            <div class="post-date">2019-05-26</div>
             
             <div class="post-content">
-              <p>👏  欢迎使用 <strong>Gridea</strong> ！<br>
-✍️  <strong>Gridea</strong> 一个静态博客写作客户端。你可以用它来记录你的生活、心情、知识、笔记、创意... ...</p>
-<!-- more -->
-<p><a href="https://github.com/getgridea/gridea">Github</a><br>
-<a href="http://hvenotes.fehey.com/">Gridea 主页</a><br>
-<a href="http://fehey.com/">示例网站</a></p>
-<h2 id="特性">特性👇</h2>
-<p>📝  你可以使用最酷的 <strong>Markdown</strong> 语法，进行快速创作</p>
-<p>🌉  你可以给文章配上精美的封面图和在文章任意位置插入图片</p>
-<p>🏷️  你可以对文章进行标签分组</p>
-<p>📋  你可以自定义菜单，甚至可以创建外部链接菜单</p>
-<p>💻  你可以在 <strong>𝖶𝗂𝗇𝖽𝗈𝗐𝗌</strong> 或 <strong>𝖬𝖺𝖼𝖮𝖲</strong> 设备上使用此客户端</p>
-<p>🌎  你可以使用 <strong>𝖦𝗂𝗍𝗁𝗎𝖻 𝖯𝖺𝗀𝖾𝗌</strong> 或 <strong>Coding Pages</strong> 向世界展示，未来将支持更多平台</p>
-<p>💬  你可以进行简单的配置，接入 <a href="https://github.com/gitalk/gitalk">Gitalk</a> 或 <a href="https://github.com/SukkaW/DisqusJS">DisqusJS</a> 评论系统</p>
-<p>🇬🇧  你可以使用<strong>中文简体</strong>或<strong>英语</strong></p>
-<p>🌁  你可以任意使用应用内默认主题或任意第三方主题，强大的主题自定义能力</p>
-<p>🖥  你可以自定义源文件夹，利用 OneDrive、百度网盘、iCloud、Dropbox 等进行多设备同步</p>
-<p>🌱 当然 <strong>Gridea</strong> 还很年轻，有很多不足，但请相信，它会不停向前🏃</p>
-<p>未来，它一定会成为你离不开的伙伴</p>
-<p>尽情发挥你的才华吧！</p>
-<p>😘 Enjoy~</p>
+              <h3 id="实体">实体：</h3>
+<p>只有当类是spring容器管理的对象时，才能引入yml文件的内容。<br>
+例如：使用 <code>@Component</code> 注解的类中的变量使用了spel表达式，然后在其他类中使用 <code>@Autowired</code> 注解注入，
+这样的话，yml中的内容就会注入当中。<br>
+这是因为spring容器在初始化的时候，会读取xml等配置文件，然后解析其内容并放在对应的缓存实例中，当spring
+管理的bean实例化的时候，会根据注解去查找对应的配置，然后设置值。如果只是通过new出来的对象是不会加载
+到yml等配置文件中的内容的。</p>
+<h3 id="logback">logback</h3>
+<p>当日志文件名称为 logback.xml 或者是 logback-spring.xml 这些spring默认会加载的名称时，和yml配置文件会有一个加载的先后顺序，也就是说日志文件会在yml配置文件之前加载，这样在其中的spel表达式是不会引入yml中的内容的。<br>
+解决这种问题的办法就是不使用默认的日志文件名，然后在yml中配置自定义的日志文件路径，然后通过标签 <code>springProperty</code> 引入配置即可。</p>
+<p>例如:</p>
+<blockquote>
+<p>yml中配置：</p>
+</blockquote>
+<pre><code> log:
+   file:
+     path: ./data/log/cms-admin
+ logging:
+   config: classpath:logback-admin.xml
+</code></pre>
+<blockquote>
+<p>logback-admin.xml中引入:</p>
+</blockquote>
+<pre><code> &lt;springProperty scope=&quot;context&quot; name=&quot;LOG_HOME&quot; source=&quot;log.file.path&quot;/&gt;        
+</code></pre>
+<blockquote>
+<p>然后就可以使用 ${LOG_HOME}/admin.log 来动态的引入配置了</p>
+</blockquote>
 
             </div>
             
-              <div class="tag-container">
-                
-                  <a href="https://zhou-chengcheng.github.io/tag/gridea" class="tag">
-                    Gridea
-                  </a>
-                
-              </div>
             
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://zhou-chengcheng.github.io/post/linux-shang-jenkins-an-zhuang-xie-zai-de-ji-ge-keng">
+                  <h3 class="post-title">
+                    Linux上 Jenkins安装、卸载的几个坑
+                  </h3>
+                </a>
+              </div>
             
 
             
